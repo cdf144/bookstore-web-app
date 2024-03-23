@@ -64,8 +64,8 @@ then run it.
 ./install.ps1
 ```
 
-> [!NOTE]
->
+> **Note**
+> 
 > If you get an error that says something along the lines of "the script cannot
 > be loaded because the execution of scripts...", your Execution Policy is not
 > setup properly. To resolve this, run Windows PowerShell **as Administrator**,
