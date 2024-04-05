@@ -44,13 +44,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     # own
-    'products',
-
-    # bootstrap5
-    'bootstrap5',
-
-    # bootstrap-themes
-    'bootstrap_themes',
+    "products",
 ]
 
 MIDDLEWARE = [
@@ -95,13 +89,13 @@ DATABASES = {
     "default": {
         # 'NAME': BASE_DIR / 'db.sqlite3',
         #'ENGINE': 'django.db.backends.sqlite3',
-        # railway production name: neat-receipt
+        # railway production name: taboo-recess
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "railway",
         "USER": "postgres",
-        "PASSWORD": "ooZdiYwTkYxQufuPKXWxUEWolFEPeQCk",
-        "HOST": "roundhouse.proxy.rlwy.net",
-        "PORT": "53608",
+        "PASSWORD": "nqqXQmoEALgUqCFIBVYcfNdFdKUMzOjg",
+        "HOST": "monorail.proxy.rlwy.net",
+        "PORT": "23871",
     }
 }
 
@@ -161,17 +155,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 LOGIN_REDIRECT_URL = "/"
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'info@mydomain.com'
-EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxx'
-EMAIL_USE_TLS = True
-
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-    # other directories...
+INSTALLED_APPS[
+    #...
+    'products'
 ]
