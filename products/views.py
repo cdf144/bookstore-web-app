@@ -1,54 +1,71 @@
-from django.contrib.auth.models import User
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
-from django.template import loader
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render, get_object_or_404
+from django.views.generic import View
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import HttpResponseRedirect
 
-from .models import Book
+from models import Book, CartItems, Cart, UserAddress
+from datetime import datetime, timezone
+# Create your views here.
+@login_required
+def add_to_cart(request, book, user):
+    carts = Cart.objects.get_object_or_404(user=user)
+    if carts.exists():
+        cart = carts[0]
+        cartItems = CartItems.objects.filter(cart=cart, book=book).first()
+        if cartItems.exists():
+            cartItems.quantity += 1
+            cartItems.save()
+            messages.info(request, 'Book quantity updated')
+        else:
+            cartItems.objects.create(cart=cart,book=book, quantity=1)
+            messages.info(request, 'Succesfully added book')
+    else:
+        currTime = timezone.now()
+        cart = Cart.objects.create(created_by=user, create_at=currTime)
+        cartItems = CartItems.objects.create(cart=cart, book=book, quantity=1)
+        messages.info(request, 'Succesfully added book')
 
-
-def users(request):
-    """Displays a list of all users (for testing purposes)"""
-    users = User.objects.all()
-    template = loader.get_template("users.html")
-    context = {"users": users}
-    return HttpResponse(template.render(context, request))
-
-
-def book_list(request):
-    """Displays a list of 5 random books at the main page for book."""
-    # books = Book.objects.all()[:5]
-    # books = Book.objects.get(id=10010)
-    random_books = Book.objects.order_by("?").distinct()[:5]
-    return render(request, "book_list.html", {"book_list": random_books})
-
-
-def book_detail(request, id):
-    """Displays book details"""
-    book = get_object_or_404(Book, id=id)
-    return render(request, "book_detail.html", {"book": book})
-
-
-def search(request):
-    """Searches for books by title or author"""
-    query = request.GET.get("q")
-    search_results = []
-
-    if query:
-        search_results = Book.objects.filter(
-            Q(title__icontains=query) | Q(author__icontains=query)
-        )
-
-        paginator = Paginator(search_results, 10)  # Show 10 results per page
-        page_number = request.GET.get("page")
+@login_required
+def remove_from_cart(request, book, user):
+    carts = Cart.objects.get_object_or_404(user=user)
+    if carts.exists():
+        cart = carts[0]
         try:
-            search_results = paginator.page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page
-            search_results = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results
-            search_results = paginator.get_page(paginator.num_pages)
+            cartItem = CartItems.objects.filter(cart=cart, book=book).first()
+            if cartItem.quantity == 0:
+                cartItem.delete()
+                messages.info(request, 'Removed book from cart')
+            else:
+                cartItem.quantity -= 1
+                cartItem.save()
+                messages.info(request, 'Remove a book from already exist book')
+        except cartItem.DoesNotExist:
+            messages.info(request, 'Book not found')
+    else:
+        messages.info(request, 'You need to create your cart')
 
-    return render(request, "search.html", {"search_results": search_results})
+
+@login_required
+class OrderSummaryView(View):
+    def get(self, *args, **kwargs):
+        cart = Cart.objects.get_object_or_404(user=self.request.user)
+        cartItems = CartItems.objects.filter(cart=cart)
+        context = {
+            'cart_items': cartItems
+        }
+
+class PaymentView(View):
+    def get(self, *args, **kwargs):
+        cart = Cart.objects.get_object_or_404(user=self.request.user)
+        address = UserAddress.objects.get(user=self.request.user)
+        if address.
+
+
+
+
+
+
