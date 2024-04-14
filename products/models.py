@@ -1,15 +1,17 @@
+import random
 from django.db import models
 from django.contrib.auth.models import User
 
-PAYMENT_CHOICES = {
+
+# Create your models here.
+class UserPayment(models.Model):
+    PAYMENT_CHOICES = [
     ("CC", "Credit Card"),
     ("DC", "Debit Card"),
     ("PP", "PayPal"),
     ("CB", "Cash on Delivery"),
-}
+    ]
 
-# Create your models here.
-class UserPayment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     payment_type = models.CharField(choices=PAYMENT_CHOICES, max_length=2)
     expiry_date = models.DateField(null=True)
@@ -45,25 +47,30 @@ class Cart(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, default="No description provided")
 
 
 class Book(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, unique=True)
     author = models.CharField(max_length=255)
     created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    updated_at = models.DateTimeField(auto_now=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    publisher = models.CharField(max_length=255)
-    price = models.IntegerField()
-    quantity = models.IntegerField()
-    summary = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField(default=0)
+    summary = models.CharField(max_length=255, default="No summary provided")
+    img_path = models.CharField(max_length=255, default=None, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # if the book is new, then randomize its quantity
+            self.quantity = random.randint(10, 30)
+        super().save(*args, **kwargs)
 
 
 class CartItems(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    quantity = models.IntegerField(default=1)
 
     # class Meta:
     #     constraints = [
@@ -72,3 +79,24 @@ class CartItems(models.Model):
     #         )
     #     ]
 
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Processing", "Processing"),
+        ("Shipped", "Shipped"),
+        ("Delivered", "Delivered"),
+        ("Cancelled", "Cancelled"),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    address = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    shipped_date = models.DateField(null=True)
+    order_date = models.DateField()
+
+
+class OrderDetail(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
