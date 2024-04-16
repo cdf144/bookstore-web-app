@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+    Search Results
+{% endblock %}
+
+{% block content %}
+    <h1>Search Results</h1>
+    {% if search_results %}
+        {% for book in search_results %}
+            <div>
+                <h2><a href="{% url 'book_detail' book.id %}">{{ book.title }}</a></h2>
+                <p>Author: {{ book.author }}</p>
+                <p>Price: {{ book.price }}</p>
+                <p>Quantity: {{ book.quantity }}</p>
+                <p>Summary: {{ book.summary }}</p>
+                <img src="{% static book.img_path %}" alt="{{ book.title }}">
+            </div>
+        {% endfor %}
+        <!-- Pagination links -->
+        <div class="text-center">
+            {% if search_results.has_previous %}
+                <a href="?q={{ request.GET.q }}&page=1">First</a>
+                <a href="?q={{ request.GET.q }}&page={{ search_results.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span>Page {{ search_results.number }} of {{ search_results.paginator.num_pages }}</span>
+
+            {% if search_results.has_next %}
+                <a href="?q={{ request.GET.q }}&page={{ search_results.next_page_number }}">Next</a>
+                <a href="?q={{ request.GET.q }}&page={{ search_results.paginator.num_pages }}">Last</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No books found.</p>
+    {% endif %}
+{% endblock %}

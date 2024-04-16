@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from products import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path("", TemplateView.as_view(template_name="home.html")),
+    path('users/', views.users, name='users'),
+    path('books/', views.book_list, name='book_list'),
+    path('books/<int:id>/', views.book_detail, name='book_detail'),
+    path('search/', views.search, name='search'),
 ]
