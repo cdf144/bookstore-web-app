@@ -1,44 +1,47 @@
-from django.shortcuts import render, get_object_or_404
-from django.template import loader
 from django.contrib.auth.models import User
-from .models import Book
-from django.http import HttpResponse
+from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.template import loader
 
-# Create your views here.
+from .models import Book
 
-# Displays a list of all users (for testing purposes)
+
 def users(request):
+    """Displays a list of all users (for testing purposes)"""
     users = User.objects.all()
-    template = loader.get_template('users.html')
-    context = {
-        "users": users
-    }
+    template = loader.get_template("users.html")
+    context = {"users": users}
     return HttpResponse(template.render(context, request))
 
-# Displays a list of 5 random books at the main page for book.
+
 def book_list(request):
+    """Displays a list of 5 random books at the main page for book."""
     # books = Book.objects.all()[:5]
     # books = Book.objects.get(id=10010)
-    random_books = Book.objects.order_by('?').distinct()[:5]
-    return render(request, 'book_list.html', {'book_list': random_books})
+    random_books = Book.objects.order_by("?").distinct()[:5]
+    return render(request, "book_list.html", {"book_list": random_books})
 
-# Displays book details
+
 def book_detail(request, id):
+    """Displays book details"""
     book = get_object_or_404(Book, id=id)
-    return render(request, 'book_detail.html', {'book': book})
+    return render(request, "book_detail.html", {"book": book})
 
-# Searches for books by title or author
+
 def search(request):
-    query = request.GET.get('q')
+    """Searches for books by title or author"""
+    query = request.GET.get("q")
     search_results = []
 
     if query:
-        search_results = Book.objects.filter(Q(title__icontains=query) | Q(author__icontains=query))
-      
+        search_results = Book.objects.filter(
+            Q(title__icontains=query) | Q(author__icontains=query)
+        )
+
         paginator = Paginator(search_results, 10)  # Show 10 results per page
-        page_number = request.GET.get('page')
+        page_number = request.GET.get("page")
         try:
             search_results = paginator.page(page_number)
         except PageNotAnInteger:
@@ -48,4 +51,4 @@ def search(request):
             # If page is out of range (e.g. 9999), deliver last page of results
             search_results = paginator.get_page(paginator.num_pages)
 
-    return render(request, 'search.html', {'search_results': search_results})
+    return render(request, "search.html", {"search_results": search_results})
