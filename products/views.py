@@ -36,7 +36,7 @@ def search(request):
 
     if query:
         search_results = Book.objects.filter(Q(title__icontains=query) | Q(author__icontains=query))
-        
+      
         paginator = Paginator(search_results, 10)  # Show 10 results per page
         page_number = request.GET.get('page')
         try:
