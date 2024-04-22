@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.github",
     # own
     "products",
+    "cities_light"
 ]
 
 MIDDLEWARE = [
@@ -155,7 +156,3 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 LOGIN_REDIRECT_URL = "/"
 
-INSTALLED_APPS[
-    #...
-    'products'
-]
