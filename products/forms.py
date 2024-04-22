@@ -1,5 +1,7 @@
 from django import forms
 from models import Book
+from models import UserAddress
+from cities_light.forms import CityForm
 
 class BookForms(forms.ModelForm):
     class Meta:
@@ -27,3 +29,7 @@ class BookForms(forms.ModelForm):
             'summary': forms.Textarea(),
         }
 
+class CheckoutForm(forms.Form):
+    shipping_address = forms.CharField(require=True)
+    billing_address = forms.CharField(require=True)
+    shipping_city = CityForm()
