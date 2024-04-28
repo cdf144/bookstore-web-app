@@ -71,13 +71,11 @@ def add_to_cart(request, book_title):
             cartItem = CartItems.objects.get(cart=cart, book=book)
             cartItem.quantity += 1
             cartItem.save()
-            messages.info(request, "You have successfully")
-            return redirect("book_detail")
+            return HttpResponse("You have successfully")
         except CartItems.DoesNotExist:
             cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
             cartItem.save()
-            messages.info(request, "Book added to your cart")
-            return redirect("book_detail")
+            return HttpResponse("Book added to your cart")
     except Cart.DoesNotExist:
         timeNow = datetime.now()
         cart = Cart.objects.create(
@@ -90,8 +88,8 @@ def add_to_cart(request, book_title):
             quantity=1
         )
         cartItem.save()
-        messages.info(request, "Your cart have been added")
-        return redirect("book_detail")
+        return HttpResponse("Your cart have been added")
+
 
 def remove_from_cart(request, slug):
     book = get_object_or_404(Book, slug=slug)
