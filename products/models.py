@@ -103,7 +103,7 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     address = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status = models.CharField(max_length=40, choices=STATUS_CHOICES)
     shipped_date = models.DateField(null=True)
     order_date = models.DateField()
 

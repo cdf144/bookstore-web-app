@@ -44,8 +44,9 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
     # own
-    "products",
-    "cities_light"
+    "bootstrap5",
+    "bootstrap_themes",
+    "products"
 ]
 
 MIDDLEWARE = [
@@ -94,9 +95,9 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "railway",
         "USER": "postgres",
-        "PASSWORD": "nqqXQmoEALgUqCFIBVYcfNdFdKUMzOjg",
-        "HOST": "monorail.proxy.rlwy.net",
-        "PORT": "23871",
+        "PASSWORD": "ooZdiYwTkYxQufuPKXWxUEWolFEPeQCk",
+        "HOST": "roundhouse.proxy.rlwy.net",
+        "PORT": "53608",
     }
 }
 

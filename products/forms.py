@@ -1,9 +1,7 @@
 from django import forms
-from models import Book
-from models import UserAddress
-from cities_light.forms import CityForm
+from .models import UserPayment
 
-class BookForms(forms.ModelForm):
+"""class BookForms(forms.ModelForm):
     class Meta:
         model = Book
         fields = "__all__"
@@ -13,7 +11,6 @@ class BookForms(forms.ModelForm):
             'author' : 'Author',
             'created_at' : 'Publication Date',
             'updated_at' : 'Republication Date',
-            'publisher' : 'Publisher',
             'price' : 'Price',
             'quantity' : 'Quantity',
             'summary' : 'Summary',
@@ -23,13 +20,17 @@ class BookForms(forms.ModelForm):
             'author': forms.TextInput(),
             'created_at': forms.DateTimeInput(),
             'updated_at': forms.DateTimeInput(),
-            'publisher' : forms.TextInput(),
             'price': forms.ModelForm(),
             'quantity': forms.NumberInput(),
             'summary': forms.Textarea(),
         }
+"""
+
 
 class CheckoutForm(forms.Form):
-    shipping_address = forms.CharField(require=True)
-    billing_address = forms.CharField(require=True)
-    shipping_city = CityForm()
+    shipping_address = forms.CharField(max_length=255)
+    shipping_city = forms.CharField(max_length=255)
+    shipping_country = forms.CharField(max_length=255)
+    postal_code = forms.CharField(max_length=255)
+    mobile = forms.CharField(max_length=255)
+    #payment_method = forms.ChoiceField(choices=[UserPayment.PAYMENT_CHOICES])
