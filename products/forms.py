@@ -25,7 +25,12 @@ from .models import UserPayment
             'summary': forms.Textarea(),
         }
 """
-
+PAYMENT_CHOICES = [
+        ("CC", "Credit Card"),
+        ("DC", "Debit Card"),
+        ("PP", "PayPal"),
+        ("CB", "Cash on Delivery"),
+]
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(max_length=255)
@@ -33,4 +38,4 @@ class CheckoutForm(forms.Form):
     shipping_country = forms.CharField(max_length=255)
     postal_code = forms.CharField(max_length=255)
     mobile = forms.CharField(max_length=255)
-    #payment_method = forms.ChoiceField(choices=[UserPayment.PAYMENT_CHOICES])
+    payment_method = forms.ChoiceField(choices=[UserPayment.PAYMENT_CHOICES])

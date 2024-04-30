@@ -9,9 +9,8 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import CartItems, Cart, UserAddress, Order, OrderDetail
+from .models import *
 from datetime import datetime
-from .models import Book
 from .forms import CheckoutForm
 
 
@@ -60,8 +59,6 @@ def search(request):
 
     return render(request, "search.html", {"search_results": search_results})
 
-
-# Create your views here.
 @login_required
 def add_to_cart(request, book_title):
     book = Book.objects.get(title=book_title)
@@ -90,7 +87,7 @@ def add_to_cart(request, book_title):
         cartItem.save()
         return HttpResponse("Your cart have been added")
 
-
+"""
 def remove_from_cart(request, slug):
     book = get_object_or_404(Book, slug=slug)
     cart = Cart.objects.get(created_by=request.user)
@@ -106,7 +103,7 @@ def remove_from_cart(request, slug):
     except CartItems.DoesNotExist:
         messages.info(request, 'You do not have the product in cart')
 
-
+"""
 
 
 class OrderSummaryView(View):
@@ -124,7 +121,7 @@ class OrderSummaryView(View):
         }
         return render(self.request, 'order_summary.html', context)
 
-
+"""
 class PaymentView(View):
     def get(self, *args, **kwargs):
         order = Order.objects.filter(user=self.request.user).first()
@@ -136,7 +133,7 @@ class PaymentView(View):
         else:
             messages.info('You do not have an billing address yet')
             return redirect('checkout')
-
+"""
 
 class CheckoutView(View):
     def get(self, *args, **kwargs):
@@ -160,6 +157,7 @@ class CheckoutView(View):
             country = form.cleaned_data.get('shipping_country')
             postal_code = form.cleaned_data.get('postal_code')
             mobile = form.cleaned_data.get('mobile')
+            choice = form.cleaned_data.get('payment_method')
             shipping_info = UserAddress.objects.create(
                 user=self.request.user,
                 address_line=shipping_address,
