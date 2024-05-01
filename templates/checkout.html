@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}  {% block content %}
+
+<h1>Checkout</h1>
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% if Order %}
+    <h2>Your Cart</h2>
+    <p>This is just a test message to indicate the presence of a cart object.</p>
+{% else %}
+    <p>You don't have any items in your cart. (This might be expected during testing.)</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <h2>Shipping Information</h2>
+
+    <div class="form-group">
+        <label for="id_shipping_address">Shipping Address:</label>
+        <input type="text" name="shipping_address" id="id_shipping_address" required>
+    </div>
+
+    <div class="form-group">
+        <label for="id_shipping_city">City:</label>
+        <input type="text" name="shipping_city" id="id_shipping_city" required>
+    </div>
+
+    <div class="form-group">
+        <label for="id_shipping_country">Country:</label>
+        <input type="text" name="shipping_country" id="id_shipping_country" required>
+    </div>
+
+    <div class="form-group">
+        <label for="id_postal_code">Postal Code:</label>
+        <input type="text" name="postal_code" id="id_postal_code" required>
+    </div>
+
+    <div class="form-group">
+        <label for="id_mobile">Mobile Number:</label>
+        <input type="text" name="mobile" id="id_mobile">
+    </div>
+
+    <div class="form-group">
+        <label for="id_payment_method">Payment Method:</label>
+        <select name="payment_method" id="id_payment_method">
+            {% for choice_value, choice_text in PAYMENT_CHOICES %}
+                <option value="{{ choice_value }}">{{ choice_text }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit">Place Order (Testing Only)</button>
+</form>
+
+{% endblock %}
+
