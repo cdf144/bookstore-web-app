@@ -51,7 +51,7 @@
     <div class="form-group">
         <label for="id_payment_method">Payment Method:</label>
         <select name="payment_method" id="id_payment_method">
-            {% for choice_value, choice_text in form.PAYMENT_CHOICES %}
+            {% for choice_value, choice_text in PAYMENT_CHOICES %}
                 <option value="{{ choice_value }}">{{ choice_text }}</option>
             {% endfor %}
         </select>

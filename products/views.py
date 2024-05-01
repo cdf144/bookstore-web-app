@@ -9,9 +9,9 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import *
+from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment
 from datetime import datetime
-from .forms import CheckoutForm
+from .forms import CheckoutForm, PAYMENT_CHOICES
 
 
 def users(request):
@@ -142,7 +142,8 @@ class CheckoutView(View):
             form = CheckoutForm()
             context = {
                 'Form': form,
-                'Order': cart
+                'Order': cart,
+                'PAYMENT_CHOICES' : PAYMENT_CHOICES
             }
             return render(self.request, 'checkout.html', context)
         except ObjectDoesNotExist:
@@ -157,7 +158,14 @@ class CheckoutView(View):
             country = form.cleaned_data.get('shipping_country')
             postal_code = form.cleaned_data.get('postal_code')
             mobile = form.cleaned_data.get('mobile')
-            choice = form.cleaned_data.get('payment_method')
+            payment_method = form.cleaned_data.get("payment_method")
+            expiry_date = datetime.now()  # leave as random for now
+            user_payment = UserPayment.objects.create(
+                user=self.request.user,
+                payment_type=payment_method,
+                expiry_date=expiry_date,
+            )
+            user_payment.save()
             shipping_info = UserAddress.objects.create(
                 user=self.request.user,
                 address_line=shipping_address,
