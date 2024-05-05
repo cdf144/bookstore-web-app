@@ -25,12 +25,14 @@ from .models import UserPayment
             'summary': forms.Textarea(),
         }
 """
+
 PAYMENT_CHOICES = [
-        ("CC", "Credit Card"),
-        ("DC", "Debit Card"),
-        ("PP", "PayPal"),
-        ("CB", "Cash on Delivery"),
+    ("CC", "Credit Card"),
+    ("DC", "Debit Card"),
+    ("PP", "PayPal"),
+    ("CB", "Cash on Delivery"),
 ]
+
 
 class CheckoutForm(forms.Form):
     shipping_address = forms.CharField(max_length=255)
