@@ -59,6 +59,7 @@ def search(request):
 
     return render(request, "search.html", {"search_results": search_results})
 
+
 @login_required
 def add_to_cart(request, book_title):
     book = Book.objects.get(title=book_title)
@@ -75,17 +76,11 @@ def add_to_cart(request, book_title):
             return HttpResponse("Book added to your cart")
     except Cart.DoesNotExist:
         timeNow = datetime.now()
-        cart = Cart.objects.create(
-            created_by=request.user,
-            created_at=timeNow
-        )
-        cartItem = CartItems.objects.create(
-            cart=cart,
-            book=book,
-            quantity=1
-        )
+        cart = Cart.objects.create(created_by=request.user, created_at=timeNow)
+        cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
         cartItem.save()
         return HttpResponse("Your cart have been added")
+
 
 """
 def remove_from_cart(request, slug):
@@ -114,12 +109,9 @@ class OrderSummaryView(View):
         for item in cartItems:
             book = Book.objects.get(title=item.book.title)
             totalPrice += item.quantity * book.price
-        context = {
-            'cart_items': cartItems,
-            'orders': cart,
-            'total_price': totalPrice
-        }
-        return render(self.request, 'order_summary.html', context)
+        context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
+        return render(self.request, "order_summary.html", context)
+
 
 """
 class PaymentView(View):
@@ -135,29 +127,26 @@ class PaymentView(View):
             return redirect('checkout')
 """
 
+
 class CheckoutView(View):
     def get(self, *args, **kwargs):
         try:
             cart = Cart.objects.get(created_by=self.request.user)
             form = CheckoutForm()
-            context = {
-                'Form': form,
-                'Order': cart,
-                'PAYMENT_CHOICES' : PAYMENT_CHOICES
-            }
-            return render(self.request, 'checkout.html', context)
+            context = {"Form": form, "Order": cart, "PAYMENT_CHOICES": PAYMENT_CHOICES}
+            return render(self.request, "checkout.html", context)
         except ObjectDoesNotExist:
-            return HttpResponse('You do not have a cart')
+            return HttpResponse("You do not have a cart")
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
         print(self.request.POST)
         if form.is_valid():
-            shipping_address = form.cleaned_data.get('shipping_address')
-            city = form.cleaned_data.get('shipping_city')
-            country = form.cleaned_data.get('shipping_country')
-            postal_code = form.cleaned_data.get('postal_code')
-            mobile = form.cleaned_data.get('mobile')
+            shipping_address = form.cleaned_data.get("shipping_address")
+            city = form.cleaned_data.get("shipping_city")
+            country = form.cleaned_data.get("shipping_country")
+            postal_code = form.cleaned_data.get("postal_code")
+            mobile = form.cleaned_data.get("mobile")
             payment_method = form.cleaned_data.get("payment_method")
             expiry_date = datetime.now()  # leave as random for now
             user_payment = UserPayment.objects.create(
@@ -172,27 +161,28 @@ class CheckoutView(View):
                 city=city,
                 country=country,
                 postal_code=postal_code,
-                mobile=mobile
+                mobile=mobile,
             )
             shipping_info.save()
             order = Order.objects.create(
                 user=self.request.user,
                 status=Order.STATUS_CHOICES[0][0],
                 address=shipping_info,
-                order_date=datetime.now()
+                order_date=datetime.now(),
             )
             order.save()
             cart = Cart.objects.get(created_by=self.request.user)
             cartItems = CartItems.objects.filter(cart=cart)
             for cartItem in cartItems:
                 orderDetail = OrderDetail.objects.create(
-                    order=order,
-                    book=cartItem.book,
-                    quantity=cartItem.quantity
+                    order=order, book=cartItem.book, quantity=cartItem.quantity
                 )
                 orderDetail.save()
                 cartItem.delete()
-            return redirect('book_list')
+            return redirect("book_list")
         else:
-            messages.info(request=self.request, message="You have not filled all the needed information")
-            return redirect('check_out')
+            messages.info(
+                request=self.request,
+                message="You have not filled all the needed information",
+            )
+            return redirect("check_out")
