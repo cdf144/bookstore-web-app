@@ -1,5 +1,5 @@
 from django import forms
-from .models import UserPayment
+from .models import UserPayment, UserAddress, User
 
 """class BookForms(forms.ModelForm):
     class Meta:
@@ -41,3 +41,9 @@ class CheckoutForm(forms.Form):
     postal_code = forms.CharField(max_length=255)
     mobile = forms.CharField(max_length=255)
     payment_method = forms.ChoiceField(choices=UserPayment.PAYMENT_CHOICES)
+
+class UserInformation(forms.ModelForm):
+    class Meta:
+        model = User
+        exclude = ['is_superuser', 'password', 'last_login', 'is_staff', 'is_active', 'date_joined']
+

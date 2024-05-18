@@ -9,4 +9,8 @@
     {% else %}
         <a href="{% provider_login_url 'github' %}">Sign Up with GitHub</a>
     {% endif %}
+    <form method="get" action="{% url 'cart-detail' %}">
+        {% csrf_token %}
+    <button type="submit"> View Cart </button>
+    </form>
 {% endblock %}

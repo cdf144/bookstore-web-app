@@ -1,3 +1,5 @@
+import requests
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
@@ -9,9 +11,9 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment
+from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, WishList
 from datetime import datetime
-from .forms import CheckoutForm, PAYMENT_CHOICES
+from .forms import CheckoutForm, PAYMENT_CHOICES, UserInformation
 
 
 def users(request):
@@ -62,6 +64,10 @@ def search(request):
 
 @login_required
 def add_to_cart(request, book_title):
+    """Adds book to cart"""
+    user = User.objects.get(id=request.user.id)
+    if user == None:
+        return redirect("")
     book = Book.objects.get(title=book_title)
     try:
         cart = Cart.objects.get(created_by=request.user)
@@ -82,26 +88,9 @@ def add_to_cart(request, book_title):
         return HttpResponse("Your cart have been added")
 
 
-"""
-def remove_from_cart(request, slug):
-    book = get_object_or_404(Book, slug=slug)
-    cart = Cart.objects.get(created_by=request.user)
-    try:
-        cartItem = CartItems.objects.get(cart=cart, book=book)
-        if cartItem.quantity == 0:
-            cartItem.delete()
-            messages.info(request, "Item deleted successfully")
-        else:
-            cartItem.quantity -= 1
-            cartItem.save()
-            messages.info(request, "Item removed successfully")
-    except CartItems.DoesNotExist:
-        messages.info(request, 'You do not have the product in cart')
-
-"""
 
 
-class OrderSummaryView(View):
+class CartDetailView(View):
     def get(self, *args, **kwargs):
         cart = get_object_or_404(Cart, created_by=self.request.user)
         cartItems = CartItems.objects.filter(cart=cart)
@@ -110,23 +99,23 @@ class OrderSummaryView(View):
             book = Book.objects.get(title=item.book.title)
             totalPrice += item.quantity * book.price
         context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
-        return render(self.request, "order_summary.html", context)
-
-
-"""
-class PaymentView(View):
-    def get(self, *args, **kwargs):
-        order = Order.objects.filter(user=self.request.user).first()
-        if order.address:
-            context = {
-                'order': order
-            }
-            return render(self.request, 'payment.html')
-        else:
-            messages.info('You do not have an billing address yet')
-            return redirect('checkout')
-"""
-
+        return render(self.request, "cart-detail.html", context)
+    def post(self, *args, **kwargs):
+        cart = get_object_or_404(Cart, created_by=self)
+        book_name = self.request.POST.get("book_name")
+        action = self.request.POST.get("action")
+        if book_name and action:
+            book = CartItems.objects.get(cart=cart, name=book_name)
+            if action == "increment":
+                book.quantity += 1
+                book.save()
+            if action == "decrement":
+                if book.quantity > 1:
+                    book.quantity -= 1
+                    book.save()
+                else:
+                    book.delete()
+        return redirect("cart-detail")
 
 class CheckoutView(View):
     def get(self, *args, **kwargs):
@@ -137,6 +126,7 @@ class CheckoutView(View):
             return render(self.request, "checkout.html", context)
         except ObjectDoesNotExist:
             return HttpResponse("You do not have a cart")
+
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
@@ -186,3 +176,41 @@ class CheckoutView(View):
                 message="You have not filled all the needed information",
             )
             return redirect("check_out")
+
+def add_to_wishlist(request, title):
+    book = WishList.objects.get(title=title)
+    if book is not None:
+        return
+    favoriteBook = WishList.objects.create(title=title, user=request.user)
+    favoriteBook.save()
+    return redirect("book_detail")
+
+def remove_from_wishlist(request, title):
+    try:
+        bookToRemove = WishList.objects.get(title=title)
+        bookToRemove.delete()
+        return redirect("")
+    except WishList.DoesNotExist:
+        return HttpResponse(status=404)
+def get_user_wishlist(request):
+    wishlistBook = WishList.objects.filter(user=request.user)
+    context = {
+        "wishlistBook" : wishlistBook
+    }
+
+    return render(request, "", context,)
+
+class AccountManagementView(View, LoginRequiredMixin):
+    def get(self, *args, **kwargs):
+        form = UserInformation(instance=self.request.user)
+        context = {
+            'user': self.request.user,
+            'edit': form
+        }
+        return render(self.request, "user-information.html", context)
+    def post(self, *args, **kwargs):
+        form = UserInformation(self.request.POST or None)
+        if form.has_changed() and form.is_valid():
+            form = User(self.request.POST, instance=self.request.user)
+            form.save()
+        return redirect("")

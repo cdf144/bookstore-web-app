@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from products import views
-from products.views import CheckoutView, OrderSummaryView
+from products.views import CheckoutView, CartDetailView
 
 app_name = "core"
 
@@ -31,7 +31,9 @@ urlpatterns = [
     path("books/", views.book_list, name="book_list"),
     path("books/<int:id>/", views.book_detail, name="book_detail"),
     path("search/", views.search, name="search"),
-    path("checkout/", CheckoutView.as_view(), name="check_out"),
-    path("order-summary/", OrderSummaryView.as_view(), name="order-summary"),
+    path("checkout/", CheckoutView.as_view(), name="checkout"),
+    path("cart-detail/", CartDetailView.as_view(), name="cart-detail"),
     path("add_to_cart<str:book_title>/", views.add_to_cart, name="add_to_cart"),
+    path("add_to_wishlist<str:book_title>/", views.add_to_wishlist, name="add_to_wishlist"),
+    path("account/", views.AccountManagementView.as_view(), name="account")
 ]
