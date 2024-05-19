@@ -2,42 +2,38 @@
 {% load static %}
 
 {% block title %}
-  Book List
+  {{ category.name }} Books
 {% endblock %}
 
 {% block content %}
-  <h1>Books</h1>
   <div class="row">
-    {% for category in page_obj %}
-      <div class="col-md-12 mb-3">
-        <div class="card">
-          <div class="card-header">
-            <h5>{{ category.name }}</h5>
-          </div>
-          <div class="card-body row">
-            {% for book in category.random_books %}
-              <div class="col-md-3 mb-3">
-                <div class="card">
-                  <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}" style="max-height: 300px;">
-                  <div class="card-body">
-                    <h6 class="card-title">{{ book.title }}</h6>
-                    <p class="card-text">{{ book.author }}</p>
-                    <a href="{% url 'book_detail' book.id %}" class="btn btn-sm btn-primary">View Details</a>
-                  </div>
-                </div>
+    <!-- Category Header -->
+    <div class="col-md-12 mb-4">
+      <h2 class="text-center">{{ category.name }}</h2>
+      <hr class="my-4">
+    </div>
+
+    <!-- Category Books -->
+    <div class="col-md-9 mx-auto">
+      <div class="row">
+        {% for book in page_obj %}
+          <div class="col-md-3 mb-3">
+            <div class="card">
+              <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}">
+              <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <p class="card-text">{{ book.author }}</p>
+                <a href="{% url 'book_detail' book.id %}" class="btn btn-sm btn-primary">View Details</a>
               </div>
-            {% endfor %}
+            </div>
           </div>
-          <div class="card-footer">
-            <a href="{% url 'category_books' category.id %}" class="btn btn-sm btn-warning btn-lg">Show more</a>
-          </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
+    </div>
   </div>
 
-  <!-- Pagination controls -->
-  <nav aria-label="Page navigation">
+  <!-- Pagination links -->
+  <nav aria-label="Page navigation" class="mt-4">
     <ul class="pagination justify-content-center">
       {% if page_obj.has_previous %}
         <li class="page-item">

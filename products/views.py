@@ -9,7 +9,7 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment
+from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, Category
 from datetime import datetime
 from .forms import CheckoutForm, PAYMENT_CHOICES
 
@@ -21,14 +21,39 @@ def users(request):
     context = {"users": users}
     return HttpResponse(template.render(context, request))
 
+def home(request):
+    categories = Category.objects.all()
+    random_books = Book.objects.order_by("?")[:12]  # Random 12 books
+    return render(request, "home.html", {"categories": categories, "random_books": random_books})
 
+def category_books(request, category_id):
+    category = Category.objects.get(id=category_id)
+    books = Book.objects.filter(category=category)
+    
+    paginator = Paginator(books, 12)  # Show 10 books per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "category_books.html", {"category": category, "page_obj": page_obj})
+
+"""
 def book_list(request):
-    """Displays a list of 5 random books at the main page for book."""
     # books = Book.objects.all()[:5]
     # books = Book.objects.get(id=10010)
     random_books = Book.objects.order_by("?").distinct()[:5]
     return render(request, "book_list.html", {"book_list": random_books})
+"""
 
+def book_list(request):
+    categories = Category.objects.all().order_by('id')
+    for category in categories:
+        category.random_books = category.book_set.order_by('?')[:4]  # Get 4 random books for each category
+
+    paginator = Paginator(categories, 2)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'page_obj': page_obj}
+    return render(request, 'book_list.html', context)
 
 def book_detail(request, id):
     """Displays book details"""
@@ -100,8 +125,21 @@ def remove_from_cart(request, slug):
 
 """
 
+def remove_from_cart(request, book_title):
+    book = get_object_or_404(Book, title=book_title)
+    try:
+        cart = Cart.objects.get(created_by=request.user)
+        cart_item = CartItems.objects.get(cart=cart, book=book)
+        cart_item.delete()
+        messages.info(request, "Book removed from your cart")
+    except Cart.DoesNotExist:
+        messages.error(request, "You do not have a cart")
+    except CartItems.DoesNotExist:
+        messages.error(request, "Book is not in your cart")
+    return redirect("order-summary")
 
-class OrderSummaryView(View):
+
+class CartView(View):
     def get(self, *args, **kwargs):
         cart = get_object_or_404(Cart, created_by=self.request.user)
         cartItems = CartItems.objects.filter(cart=cart)
@@ -110,7 +148,7 @@ class OrderSummaryView(View):
             book = Book.objects.get(title=item.book.title)
             totalPrice += item.quantity * book.price
         context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
-        return render(self.request, "order_summary.html", context)
+        return render(self.request, "cart.html", context)
 
 
 """
@@ -186,3 +224,34 @@ class CheckoutView(View):
                 message="You have not filled all the needed information",
             )
             return redirect("check_out")
+
+@login_required
+def profile(request):
+    """Displays the user's profile"""
+    user = request.user
+
+    # Deduplicate addresses
+    unique_addresses = []
+    seen_addresses = set()
+    for address in user.useraddress_set.all():
+        identifier = (address.address_line, address.city, address.postal_code, address.country, address.mobile)
+        if identifier not in seen_addresses:
+            unique_addresses.append(address)
+            seen_addresses.add(identifier)
+
+    # Deduplicate payment methods
+    unique_payments = []
+    seen_payments = set()
+    for payment in user.userpayment_set.all():
+        identifier = (payment.payment_type, payment.expiry_date)
+        if identifier not in seen_payments:
+            unique_payments.append(payment)
+            seen_payments.add(identifier)
+
+    context = {
+        'user': user,
+        'addresses': unique_addresses,
+        'payments': unique_payments,
+    }
+
+    return render(request, 'profile.html', context)

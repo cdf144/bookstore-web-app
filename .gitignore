@@ -142,3 +142,4 @@ static/*
 !static/css
 static/css/*
 !static/css/mdb.rtl.min.css
+!static/logo
