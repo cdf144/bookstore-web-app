@@ -1,10 +1,10 @@
 from django.contrib.auth.models import User
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.template import loader
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render, get_object_or_404, redirect, Http404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -17,7 +17,6 @@ def login(request):
     return render(request, "login.html")
 
 def users(request):
-    """Displays a list of all users (for testing purposes)"""
     users = User.objects.all()
     template = loader.get_template("users.html")
     context = {"users": users}
@@ -38,14 +37,6 @@ def category_books(request, category_id):
     
     return render(request, "category_books.html", {"category": category, "page_obj": page_obj})
 
-"""
-def book_list(request):
-    # books = Book.objects.all()[:5]
-    # books = Book.objects.get(id=10010)
-    random_books = Book.objects.order_by("?").distinct()[:5]
-    return render(request, "book_list.html", {"book_list": random_books})
-"""
-
 def book_list(request):
     categories = Category.objects.all().order_by('id')
     for category in categories:
@@ -58,19 +49,18 @@ def book_list(request):
     return render(request, 'book_list.html', context)
 
 def book_detail(request, id):
-    """Displays book details"""
     book = get_object_or_404(Book, id=id)
     user = request.user
     wishlisted = WishList.objects.filter(user=user, book=book).exists()
     context = {
         'book': book,
-        'wishlisted': wishlisted
+        'wishlisted': wishlisted,
+        'user' : user
     }
     return render(request, 'book_detail.html', context)
 
 
 def search(request):
-    """Searches for books by title or author"""
     query = request.GET.get("q")
     search_results = []
 
@@ -117,24 +107,6 @@ def add_to_cart(request, book_title):
         cartItem.save()
         return HttpResponse("Your cart have been added")
 
-
-"""
-def remove_from_cart(request, slug):
-    book = get_object_or_404(Book, slug=slug)
-    cart = Cart.objects.get(created_by=request.user)
-    try:
-        cartItem = CartItems.objects.get(cart=cart, book=book)
-        if cartItem.quantity == 0:
-            cartItem.delete()
-            messages.info(request, "Item deleted successfully")
-        else:
-            cartItem.quantity -= 1
-            cartItem.save()
-            messages.info(request, "Item removed successfully")
-    except CartItems.DoesNotExist:
-        messages.info(request, 'You do not have the product in cart')
-
-"""
 @login_required
 def remove_from_cart(request, book_title):
     book = get_object_or_404(Book, title=book_title)
@@ -164,21 +136,6 @@ class CartView(View):
             context = {"cart_items": [], "orders": None, "total_price": 0}
 
         return render(self.request, "cart.html", context)
-
-
-"""
-class PaymentView(View):
-    def get(self, *args, **kwargs):
-        order = Order.objects.filter(user=self.request.user).first()
-        if order.address:
-            context = {
-                'order': order
-            }
-            return render(self.request, 'payment.html')
-        else:
-            messages.info('You do not have an billing address yet')
-            return redirect('checkout')
-"""
 
 
 class CheckoutView(View):
@@ -242,7 +199,6 @@ class CheckoutView(View):
 
 @login_required
 def profile(request):
-    """Displays the user's profile"""
     user = request.user
 
     # Deduplicate addresses
@@ -297,7 +253,7 @@ def wishlist(request):
     return render(request, 'wishlist.html', {'page_obj': page_obj})
 
 @login_required
-def settings(request):
+def edit_user_info(request):
     user = request.user
 
     if request.method == 'POST':
