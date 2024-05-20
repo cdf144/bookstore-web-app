@@ -1,5 +1,5 @@
 from django import forms
-from .models import UserPayment
+from .models import UserPayment, User
 
 """class BookForms(forms.ModelForm):
     class Meta:
@@ -41,3 +41,8 @@ class CheckoutForm(forms.Form):
     postal_code = forms.CharField(max_length=255)
     mobile = forms.CharField(max_length=255)
     payment_method = forms.ChoiceField(choices=UserPayment.PAYMENT_CHOICES)
+
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']

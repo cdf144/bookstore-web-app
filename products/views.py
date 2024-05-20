@@ -11,7 +11,7 @@ from django.contrib import messages
 
 from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, Category, WishList
 from datetime import datetime
-from .forms import CheckoutForm, PAYMENT_CHOICES
+from .forms import CheckoutForm, PAYMENT_CHOICES, UserUpdateForm
 
 def login(request):
     return render(request, "login.html")
@@ -92,7 +92,6 @@ def search(request):
 
     return render(request, "search.html", {"search_results": search_results})
 
-
 @login_required
 def add_to_cart(request, book_title):
     book = Book.objects.get(title=book_title)
@@ -102,11 +101,15 @@ def add_to_cart(request, book_title):
             cartItem = CartItems.objects.get(cart=cart, book=book)
             cartItem.quantity += 1
             cartItem.save()
-            return HttpResponse("Book added to your cart")
+            list(messages.get_messages(request))
+            messages.success(request, 'Book added to your cart!')
+            return redirect('book_detail', book.id)
         except CartItems.DoesNotExist:
             cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
             cartItem.save()
-            return HttpResponse("Book added to your cart")
+            list(messages.get_messages(request))
+            messages.success(request, 'Book added to your cart!')
+            return redirect('book_detail', book.id)
     except Cart.DoesNotExist:
         timeNow = datetime.now()
         cart = Cart.objects.create(created_by=request.user, created_at=timeNow)
@@ -292,3 +295,19 @@ def wishlist(request):
     page_obj = paginator.get_page(page_number)
     
     return render(request, 'wishlist.html', {'page_obj': page_obj})
+
+@login_required
+def settings(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            list(messages.get_messages(request))
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        form = UserUpdateForm(instance=user)
+
+    return render(request, 'update_info.html', {'form': form})
