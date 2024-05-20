@@ -5,15 +5,21 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>
         {% block title %}
         Bookstore Web App
         {% endblock %}
     </title>
-    <link rel="stylesheet" href="{% static 'css/mdb.rtl.min.css' %}">
-
     {% bootstrap_css %}
+
+    <style>
+        .navbar-brand img {
+            max-height: 40px;
+            max-width: 40px;
+            border-radius: 50%;
+        }
+    </style>
 
 </head>
 <body>
@@ -34,10 +40,27 @@
                         <a class="nav-link" href="http://127.0.0.1:8000/books/">Books</a>
                     </li>
                 </ul>
-                <form class="d-flex" method="get" action="{% url 'search' %}">
-                    <input class="form-control me-2" type="search" name="q" placeholder="Search books..." aria-label="Search">
+                <form class="d-flex mx-auto" method="get" action="{% url 'search' %}" style="width: 70%;">
+                    <input class="form-control me-2" type="search" name="q" placeholder="Find the book of your dreams..." aria-label="Search" style="width: 80%;">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
+                <div class="ms-auto">
+                    <!-- View Cart button -->
+                    <a class="navbar-brand me-3" href="{% url 'cart' %}">
+                        <img src={% static 'logo/cart.jpg' %} alt="View your cart">
+                    </a>
+
+                    <!-- Profile button -->
+                    {% if request.user.is_authenticated %}
+                        <a class="navbar-brand" href="{% url 'profile' %}">
+                            <img src="{% static 'logo/logo2.jpg' %}" alt="Profile">
+                        </a>
+                    {% else %}
+                        <a class="navbar-brand" href="{% url 'login' %}">
+                            <img src="{% static 'logo/logo2.jpg' %}" alt="Profile">
+                        </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
@@ -53,6 +76,6 @@
             event.preventDefault();
             window.location.href = '/search/?q=' + document.querySelector('input[name="q"]').value;
         });
-    </script>    
+    </script>
 </body>
 </html>

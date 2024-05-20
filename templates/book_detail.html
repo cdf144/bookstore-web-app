@@ -6,17 +6,53 @@
 {% endblock %}
 
 {% block content %}
-  <h1>{{ book.title }}</h1>
-  <p>Author: {{ book.author }}</p>
-  <p>Price: {{ book.price }}</p>
-  <p>Quantity: {{ book.quantity }}</p>
-  <p>Summary: {{ book.summary }}</p>
-  <img src="{% static book.img_path %}" alt="{{ book.title }}">
-  <form method="post" action="{% url 'add_to_cart' book.title %}">
-    {% csrf_token %}
-    <button type="submit">Add to Cart</button>
-  </form>
+<div class="container">
+  <div class="row">
+    <!-- Book Image -->
+    <div class="col-md-4">
+      <img src="{% static book.img_path %}" alt="{{ book.title }}" class="img-fluid" style="height: 450px; width: 450px">
+    </div>
+    <!-- Book Details -->
+    <div class="col-md-8">
+      <div class="book-details">
+        <!-- Book Title -->
+        <h1><span class="highlight">{{ book.title }}</span></h1>
+        <!-- Author, Price, Quantity -->
+        <p><strong>Author:</strong> {{ book.author }}</p>
+        <p><strong>Price:</strong> {{ book.price }}</p>
+        <p><strong>Quantity:</strong> {{ book.quantity }}</p>
+        <p><strong>Summary:</strong> {{ book.summary }}</p>
+        
+        <!-- Add to Cart Button -->
+        <form method="post" action="{% url 'add_to_cart' book.title %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Add to Cart</button>
+        </form>
+        
+        <!-- Wishlist Button -->
+        {% if wishlisted %}
+          <form method="post" action="{% url 'remove_from_wishlist' book.id %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Wishlisted</button>
+          </form>
+        {% else %}
+          <form method="post" action="{% url 'add_to_wishlist' book.id %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Add to Wishlist</button>
+          </form>
+        {% endif %}
+        {% if messages %}
+          <div class="mt-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
-
-
-

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Profile
+{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="row">
+      <div class="col-md-8 offset-md-2">
+        <h1 class="mb-4 text-center">Profile</h1>
+        <div class="d-flex justify-content-end">
+          <a href="{% url 'settings' %}" class="btn btn-link">
+            <img src="{% static 'logo/setting.png' %}" alt="Settings" style="height: 20px;">
+            Update Info
+          </a>
+        </div>
+        {% if messages %}
+          <div class="mt-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">User Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-4 font-weight-bold">Username:</div>
+              <div class="col-md-8">{{ user.username }}</div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4 font-weight-bold">Email:</div>
+              <div class="col-md-8">{{ user.email }}</div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-4 font-weight-bold">Full Name:</div>
+              <div class="col-md-8">{{ user.get_full_name }}</div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="mt-5 mb-4 text-center">Addresses</h2>
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">User Addresses</h5>
+          </div>
+          <div class="card-body">
+            {% for address in addresses %}
+              <div class="mb-3">
+                <p class="mb-1"><strong>Address Line:</strong> {{ address.address_line }}</p>
+                <p class="mb-1"><strong>City:</strong> {{ address.city }}</p>
+                <p class="mb-1"><strong>Postal Code:</strong> {{ address.postal_code }}</p>
+                <p class="mb-1"><strong>Country:</strong> {{ address.country }}</p>
+                <p class="mb-1"><strong>Mobile:</strong> {{ address.mobile }}</p>
+                <hr>
+              </div>
+            {% empty %}
+              <p>No addresses available.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <h2 class="mt-5 mb-4 text-center">Payment Methods</h2>
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Payment Methods</h5>
+          </div>
+          <div class="card-body">
+            {% for payment in payments %}
+              <div class="mb-3">
+                <p class="mb-1"><strong>Payment Type:</strong> {{ payment.get_payment_type_display }}</p>
+                <p class="mb-1"><strong>Expiry Date:</strong> {{ payment.expiry_date }}</p>
+                <hr>
+              </div>
+            {% empty %}
+              <p>No payment methods available.</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- See your Wishlist Button -->
+        <div class="text-center mt-4">
+          <a href="{% url 'wishlist' %}" class="btn btn-primary">See your Wishlist</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
