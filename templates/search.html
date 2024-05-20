@@ -12,7 +12,9 @@
       {% for book in search_results %}
         <div class="col mb-4">
           <div class="card" style="max-width: 18rem;">
-            <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}" style="max-height: 200px;">
+            <div class="d-flex justify-content-center align-items-center" style="height: 300px;">
+              <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}" style="max-height: 80%; max-width: 70%;">
+            </div>
             <div class="card-body">
               <h5 class="card-title" style="font-size: 1rem;">{{ book.title }}</h5>
               <p class="card-text" style="font-size: 0.8rem;">{{ book.author }}</p>

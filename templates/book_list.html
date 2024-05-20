@@ -18,7 +18,9 @@
             {% for book in category.random_books %}
               <div class="col-md-3 mb-3">
                 <div class="card">
-                  <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}" style="max-height: 300px;">
+                  <div class="d-flex justify-content-center align-items-center" style="height: 300px;">
+                    <img src="{% static book.img_path %}" class="card-img-top" alt="{{ book.title }}" style="max-height: 80%; max-width: 70%;">
+                  </div>
                   <div class="card-body">
                     <h6 class="card-title">{{ book.title }}</h6>
                     <p class="card-text">{{ book.author }}</p>

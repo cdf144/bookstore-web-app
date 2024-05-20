@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.template import loader
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, Http404
 from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -13,6 +13,8 @@ from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, User
 from datetime import datetime
 from .forms import CheckoutForm, PAYMENT_CHOICES
 
+def login(request):
+    return render(request, "login.html")
 
 def users(request):
     """Displays a list of all users (for testing purposes)"""
@@ -94,7 +96,7 @@ def add_to_cart(request, book_title):
             cartItem = CartItems.objects.get(cart=cart, book=book)
             cartItem.quantity += 1
             cartItem.save()
-            return HttpResponse("You have successfully")
+            return HttpResponse("Book added to your cart")
         except CartItems.DoesNotExist:
             cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
             cartItem.save()
@@ -136,18 +138,22 @@ def remove_from_cart(request, book_title):
         messages.error(request, "You do not have a cart")
     except CartItems.DoesNotExist:
         messages.error(request, "Book is not in your cart")
-    return redirect("order-summary")
+    return redirect("cart")
 
 
 class CartView(View):
     def get(self, *args, **kwargs):
-        cart = get_object_or_404(Cart, created_by=self.request.user)
-        cartItems = CartItems.objects.filter(cart=cart)
-        totalPrice = 0
-        for item in cartItems:
-            book = Book.objects.get(title=item.book.title)
-            totalPrice += item.quantity * book.price
-        context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
+        try:
+            cart = get_object_or_404(Cart, created_by=self.request.user)
+            cartItems = CartItems.objects.filter(cart=cart)
+            totalPrice = 0
+            for item in cartItems:
+                book = Book.objects.get(title=item.book.title)
+                totalPrice += item.quantity * book.price
+            context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
+        except Http404:
+            context = {"cart_items": [], "orders": None, "total_price": 0}
+
         return render(self.request, "cart.html", context)
 
 

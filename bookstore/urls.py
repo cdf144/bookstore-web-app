@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from products import views
-from products.views import CheckoutView, CartView, profile
+from products.views import CheckoutView, CartView, profile, login
 
 app_name = "core"
 
@@ -37,4 +37,5 @@ urlpatterns = [
     path("add_to_cart<str:book_title>/", views.add_to_cart, name="add_to_cart"),
     path('profile/', profile, name='profile'),
     path("remove_from_cart/<str:book_title>/", views.remove_from_cart, name="remove_from_cart"),
+    path("login/", login, name='login'),
 ]

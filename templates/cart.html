@@ -8,38 +8,42 @@
 {% block content %}
     <div class="container">
         <h1 class="text-center my-4">Your Cart</h1>
-        <table class="table table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Book Title</th>
-                    <th class="text-center align-middle">Quantity</th>
-                    <th class="text-center align-middle">Price</th>
-                    <th class="text-center align-middle">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart_items %}
-                <tr>
-                    <td>{{ item.book.title }}</td>
-                    <td class="text-center align-middle">{{ item.quantity }}</td>
-                    <td class="text-center align-middle">{{ item.book.price }}</td>
-                    <td class="text-center align-middle">
-                        <a href="{% url 'remove_from_cart' item.book.title %}" class="btn btn-danger btn-sm">Remove</a>
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <th class="text-center align-middle">Total</th>
-                    <td></td>
-                    <td class="text-center align-middle">{{ total_price }}</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="card">
-            <div class="card-body text-center">
-                <a href="{% url 'check_out' %}" class="btn btn-primary btn-block">Proceed to Checkout</a>
+        {% if cart_items %}
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Book Title</th>
+                        <th class="text-center align-middle">Quantity</th>
+                        <th class="text-center align-middle">Price</th>
+                        <th class="text-center align-middle">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.book.title }}</td>
+                        <td class="text-center align-middle">{{ item.quantity }}</td>
+                        <td class="text-center align-middle">{{ item.book.price }}</td>
+                        <td class="text-center align-middle">
+                            <a href="{% url 'remove_from_cart' item.book.title %}" class="btn btn-danger btn-sm">Remove</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <th class="text-center align-middle">Total</th>
+                        <td></td>
+                        <td class="text-center align-middle">{{ total_price }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'check_out' %}" class="btn btn-primary btn-block">Proceed to Checkout</a>
+                </div>
             </div>
-        </div>
+        {% else %}
+            <p class="text-center my-4">No Cart Available</p>
+        {% endif %}
     </div>
 {% endblock %}

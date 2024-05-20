@@ -55,6 +55,10 @@
                         <a class="navbar-brand" href="{% url 'profile' %}">
                             <img src="{% static 'logo/logo2.jpg' %}" alt="Profile">
                         </a>
+                    {% else %}
+                        <a class="navbar-brand" href="{% url 'login' %}">
+                            <img src="{% static 'logo/logo2.jpg' %}" alt="Profile">
+                        </a>
                     {% endif %}
                 </div>
             </div>
