@@ -5,7 +5,7 @@
 
     <h1>Bookstore Web App</h1>
     {% if user.is_authenticated %}
-        <p>Welcome {{ user.username }} !!!</p>
+        <p>Welcome {{ user.username }}</p>
     {% else %}
         <a href="{% provider_login_url 'github' %}">Sign Up with GitHub</a>
     {% endif %}

@@ -13,6 +13,7 @@ django-stubs==4.2.7
 django-stubs-ext==4.2.7
 idna==3.7
 oauthlib==3.2.2
+phonenumbers==8.13.37
 psycopg2-binary==2.9.9
 pycparser==2.22
 PyJWT==2.8.0
