@@ -9,7 +9,7 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, Category
+from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, Category, WishList
 from datetime import datetime
 from .forms import CheckoutForm, PAYMENT_CHOICES
 
@@ -60,7 +60,13 @@ def book_list(request):
 def book_detail(request, id):
     """Displays book details"""
     book = get_object_or_404(Book, id=id)
-    return render(request, "book_detail.html", {"book": book})
+    user = request.user
+    wishlisted = WishList.objects.filter(user=user, book=book).exists()
+    context = {
+        'book': book,
+        'wishlisted': wishlisted
+    }
+    return render(request, 'book_detail.html', context)
 
 
 def search(request):
@@ -126,7 +132,7 @@ def remove_from_cart(request, slug):
         messages.info(request, 'You do not have the product in cart')
 
 """
-
+@login_required
 def remove_from_cart(request, book_title):
     book = get_object_or_404(Book, title=book_title)
     try:
@@ -261,3 +267,28 @@ def profile(request):
     }
 
     return render(request, 'profile.html', context)
+
+@login_required
+def add_to_wishlist(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    user = request.user
+    WishList.objects.get_or_create(user=user, book=book)
+    return redirect('book_detail', book_id)
+
+@login_required
+def remove_from_wishlist(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    user = request.user
+    WishList.objects.filter(user=user, book=book).delete()
+    return redirect('book_detail', book_id)
+
+@login_required
+def wishlist(request):
+    user = request.user
+    wishlist_books = Book.objects.filter(wishlist__user=user)
+    
+    paginator = Paginator(wishlist_books, 12)  # Show 12 books per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'wishlist.html', {'page_obj': page_obj})

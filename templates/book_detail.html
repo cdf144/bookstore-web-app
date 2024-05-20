@@ -10,7 +10,7 @@
   <div class="row">
     <!-- Book Image -->
     <div class="col-md-4">
-      <img src="{% static book.img_path %}" alt="{{ book.title }}" class="img-fluid" style="height: 450px; wdith: 450px">
+      <img src="{% static book.img_path %}" alt="{{ book.title }}" class="img-fluid" style="height: 450px; width: 450px">
     </div>
     <!-- Book Details -->
     <div class="col-md-8">
@@ -28,6 +28,19 @@
           {% csrf_token %}
           <button type="submit" class="btn btn-danger">Add to Cart</button>
         </form>
+        
+        <!-- Wishlist Button -->
+        {% if wishlisted %}
+          <form method="post" action="{% url 'remove_from_wishlist' book.id %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">Wishlisted</button>
+          </form>
+        {% else %}
+          <form method="post" action="{% url 'add_to_wishlist' book.id %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Add to Wishlist</button>
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>
