@@ -1,4 +1,5 @@
 from django import forms
+import phonenumbers
 from .models import UserPayment, User
 
 """class BookForms(forms.ModelForm):
@@ -42,7 +43,18 @@ class CheckoutForm(forms.Form):
     mobile = forms.CharField(max_length=255)
     payment_method = forms.ChoiceField(choices=UserPayment.PAYMENT_CHOICES)
 
+    def clean_mobile(self):
+        mobile = str(self.cleaned_data.get("mobile"))
+        try:
+            mobile = phonenumbers.parse(mobile, "VN")
+        except phonenumbers.NumberParseException:
+            raise forms.ValidationError("Mobile number is invalid")
+        if not phonenumbers.is_valid_number(mobile):
+            raise forms.ValidationError("Mobile number is not a valid VN number")
+        return mobile.national_number
+
+
 class UserUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ["username", "email", "first_name", "last_name"]

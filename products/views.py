@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
+from django.forms import ValidationError
 from django.http import Http404, HttpResponse
 from django.template import loader
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,12 +10,24 @@ from django.views.generic import View
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .models import Book, Cart, CartItems, Order, OrderDetail, UserAddress, UserPayment, Category, WishList
+from .models import (
+    Book,
+    Cart,
+    CartItems,
+    Order,
+    OrderDetail,
+    UserAddress,
+    UserPayment,
+    Category,
+    WishList,
+)
 from datetime import datetime
 from .forms import CheckoutForm, PAYMENT_CHOICES, UserUpdateForm
 
+
 def login(request):
     return render(request, "login.html")
+
 
 def users(request):
     users = User.objects.all()
@@ -22,42 +35,48 @@ def users(request):
     context = {"users": users}
     return HttpResponse(template.render(context, request))
 
+
 def home(request):
     categories = Category.objects.all()
     random_books = Book.objects.order_by("?")[:12]  # Random 12 books
-    return render(request, "home.html", {"categories": categories, "random_books": random_books})
+    return render(
+        request, "home.html", {"categories": categories, "random_books": random_books}
+    )
+
 
 def category_books(request, category_id):
     category = Category.objects.get(id=category_id)
     books = Book.objects.filter(category=category)
-    
+
     paginator = Paginator(books, 12)  # Show 10 books per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
-    return render(request, "category_books.html", {"category": category, "page_obj": page_obj})
+
+    return render(
+        request, "category_books.html", {"category": category, "page_obj": page_obj}
+    )
+
 
 def book_list(request):
-    categories = Category.objects.all().order_by('id')
+    categories = Category.objects.all().order_by("id")
     for category in categories:
-        category.random_books = category.book_set.order_by('?')[:4]  # Get 4 random books for each category
+        category.random_books = category.book_set.order_by("?")[
+            :4
+        ]  # Get 4 random books for each category
 
     paginator = Paginator(categories, 2)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    context = {'page_obj': page_obj}
-    return render(request, 'book_list.html', context)
+    context = {"page_obj": page_obj}
+    return render(request, "book_list.html", context)
+
 
 def book_detail(request, id):
     book = get_object_or_404(Book, id=id)
     user = request.user
     wishlisted = WishList.objects.filter(user=user, book=book).exists()
-    context = {
-        'book': book,
-        'wishlisted': wishlisted,
-        'user' : user
-    }
-    return render(request, 'book_detail.html', context)
+    context = {"book": book, "wishlisted": wishlisted, "user": user}
+    return render(request, "book_detail.html", context)
 
 
 def search(request):
@@ -82,6 +101,7 @@ def search(request):
 
     return render(request, "search.html", {"search_results": search_results})
 
+
 @login_required
 def add_to_cart(request, book_title):
     book = Book.objects.get(title=book_title)
@@ -92,20 +112,21 @@ def add_to_cart(request, book_title):
             cartItem.quantity += 1
             cartItem.save()
             list(messages.get_messages(request))
-            messages.success(request, 'Book added to your cart!')
-            return redirect('book_detail', book.id)
+            messages.success(request, "Book added to your cart!")
+            return redirect("book_detail", book.id)
         except CartItems.DoesNotExist:
             cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
             cartItem.save()
             list(messages.get_messages(request))
-            messages.success(request, 'Book added to your cart!')
-            return redirect('book_detail', book.id)
+            messages.success(request, "Book added to your cart!")
+            return redirect("book_detail", book.id)
     except Cart.DoesNotExist:
         timeNow = datetime.now()
         cart = Cart.objects.create(created_by=request.user, created_at=timeNow)
         cartItem = CartItems.objects.create(cart=cart, book=book, quantity=1)
         cartItem.save()
         return HttpResponse("Your cart have been added")
+
 
 @login_required
 def remove_from_cart(request, book_title):
@@ -131,7 +152,11 @@ class CartView(View):
             for item in cartItems:
                 book = Book.objects.get(title=item.book.title)
                 totalPrice += item.quantity * book.price
-            context = {"cart_items": cartItems, "orders": cart, "total_price": totalPrice}
+            context = {
+                "cart_items": cartItems,
+                "orders": cart,
+                "total_price": totalPrice,
+            }
         except Http404:
             context = {"cart_items": [], "orders": None, "total_price": 0}
 
@@ -150,7 +175,6 @@ class CheckoutView(View):
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
-        print(self.request.POST)
         if form.is_valid():
             shipping_address = form.cleaned_data.get("shipping_address")
             city = form.cleaned_data.get("shipping_city")
@@ -165,6 +189,7 @@ class CheckoutView(View):
                 expiry_date=expiry_date,
             )
             user_payment.save()
+
             shipping_info = UserAddress.objects.create(
                 user=self.request.user,
                 address_line=shipping_address,
@@ -174,6 +199,7 @@ class CheckoutView(View):
                 mobile=mobile,
             )
             shipping_info.save()
+
             order = Order.objects.create(
                 user=self.request.user,
                 status=Order.STATUS_CHOICES[0][0],
@@ -181,6 +207,7 @@ class CheckoutView(View):
                 order_date=datetime.now(),
             )
             order.save()
+
             cart = Cart.objects.get(created_by=self.request.user)
             cartItems = CartItems.objects.filter(cart=cart)
             for cartItem in cartItems:
@@ -189,13 +216,24 @@ class CheckoutView(View):
                 )
                 orderDetail.save()
                 cartItem.delete()
+
+            messages.success(
+                request=self.request, message="Your order has been placed successfully"
+            )
             return redirect("book_list")
         else:
+            try:
+                mobile = form.clean_mobile()
+            except ValidationError as e:
+                messages.info(request=self.request, message=e.message)
+                return redirect("check_out")
+
             messages.info(
                 request=self.request,
                 message="You have not filled all the needed information",
             )
             return redirect("check_out")
+
 
 @login_required
 def profile(request):
@@ -205,7 +243,13 @@ def profile(request):
     unique_addresses = []
     seen_addresses = set()
     for address in user.useraddress_set.all():
-        identifier = (address.address_line, address.city, address.postal_code, address.country, address.mobile)
+        identifier = (
+            address.address_line,
+            address.city,
+            address.postal_code,
+            address.country,
+            address.mobile,
+        )
         if identifier not in seen_addresses:
             unique_addresses.append(address)
             seen_addresses.add(identifier)
@@ -220,50 +264,55 @@ def profile(request):
             seen_payments.add(identifier)
 
     context = {
-        'user': user,
-        'addresses': unique_addresses,
-        'payments': unique_payments,
+        "user": user,
+        "addresses": unique_addresses,
+        "payments": unique_payments,
     }
 
-    return render(request, 'profile.html', context)
+    return render(request, "profile.html", context)
+
 
 @login_required
 def add_to_wishlist(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     user = request.user
     WishList.objects.get_or_create(user=user, book=book)
-    return redirect('book_detail', book_id)
+    return redirect("book_detail", book_id)
+
 
 @login_required
 def remove_from_wishlist(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     user = request.user
     WishList.objects.filter(user=user, book=book).delete()
-    return redirect('book_detail', book_id)
+    return redirect("book_detail", book_id)
+
 
 @login_required
 def wishlist(request):
     user = request.user
     wishlist_books = Book.objects.filter(wishlist__user=user)
-    
+
     paginator = Paginator(wishlist_books, 12)  # Show 12 books per page
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'wishlist.html', {'page_obj': page_obj})
+
+    return render(request, "wishlist.html", {"page_obj": page_obj})
+
 
 @login_required
 def edit_user_info(request):
     user = request.user
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = UserUpdateForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
             list(messages.get_messages(request))
-            messages.success(request, 'Your profile has been updated!')
-            return redirect('profile')
+            messages.success(request, "Your profile has been updated!")
+            return redirect("profile")
     else:
         form = UserUpdateForm(instance=user)
 
-    return render(request, 'update_info.html', {'form': form})
+    return render(request, "update_info.html", {"form": form})
+
