@@ -74,8 +74,12 @@ def book_list(request):
 def book_detail(request, id):
     book = get_object_or_404(Book, id=id)
     user = request.user
-    wishlisted = WishList.objects.filter(user=user, book=book).exists()
-    context = {"book": book, "wishlisted": wishlisted, "user": user}
+    wishlisted = False
+
+    if user.is_authenticated:
+        wishlisted = WishList.objects.filter(user=user, book=book).exists()
+
+    context = {"book": book, "wishlisted": wishlisted}
     return render(request, "book_detail.html", context)
 
 
